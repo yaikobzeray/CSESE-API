@@ -1,0 +1,8 @@
+[tool.fastapi]
+entrypoint = "app.main:app"
+
+[project]
+name = "csese-api"
+version = "1.0.0"
+description = "Backend API for the Computer Science Engineering Society of Ethiopia"
+requires-python = ">=3.12"

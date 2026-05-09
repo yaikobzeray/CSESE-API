@@ -1,0 +1,603 @@
+{% extends "sqladmin/layout.html" %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  /* ── Dashboard Overrides ───────────────────────────────────────────── */
+  .page-wrapper {
+    background: #f0f4f8;
+  }
+
+  /* Stat Cards */
+  .stat-card {
+    border-radius: 14px;
+    border: none;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, .07);
+    transition: transform .18s ease, box-shadow .18s ease;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, .13);
+  }
+
+  .stat-card .card-body {
+    padding: 1.4rem 1.5rem;
+  }
+
+  .stat-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: .78rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    opacity: .65;
+    margin-top: 2px;
+  }
+
+  .stat-sub {
+    font-size: .82rem;
+    margin-top: 4px;
+    opacity: .7;
+  }
+
+  .badge-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 5px;
+  }
+
+  /* Accent gradients */
+  .bg-grad-blue {
+    background: linear-gradient(135deg, #206bc4 0%, #4dabf7 100%);
+  }
+
+  .bg-grad-teal {
+    background: linear-gradient(135deg, #0ca678 0%, #38d9a9 100%);
+  }
+
+  .bg-grad-orange {
+    background: linear-gradient(135deg, #f76707 0%, #ffa94d 100%);
+  }
+
+  .bg-grad-purple {
+    background: linear-gradient(135deg, #7048e8 0%, #be4bdb 100%);
+  }
+
+  .bg-grad-red {
+    background: linear-gradient(135deg, #c92a2a 0%, #ff6b6b 100%);
+  }
+
+  .bg-grad-indigo {
+    background: linear-gradient(135deg, #364fc7 0%, #748ffc 100%);
+  }
+
+  .bg-grad-pink {
+    background: linear-gradient(135deg, #a61e4d 0%, #f06595 100%);
+  }
+
+  .bg-grad-green {
+    background: linear-gradient(135deg, #2b8a3e 0%, #69db7c 100%);
+  }
+
+  /* Section titles */
+  .section-title {
+    font-size: .7rem;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    font-weight: 700;
+    color: #6c757d;
+    margin-bottom: 1rem;
+  }
+
+  /* Chart card */
+  .chart-card {
+    border-radius: 14px;
+    border: none;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, .07);
+  }
+
+  /* Activity feed */
+  .activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: .85rem;
+    padding: .7rem 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .activity-item:last-child {
+    border-bottom: none;
+  }
+
+  .activity-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .95rem;
+    flex-shrink: 0;
+  }
+
+  .activity-time {
+    font-size: .75rem;
+    color: #6c757d;
+  }
+
+  /* Progress bars */
+  .metric-row {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin-bottom: .7rem;
+  }
+
+  .metric-label {
+    min-width: 110px;
+    font-size: .82rem;
+  }
+
+  .metric-bar {
+    flex: 1;
+    height: 8px;
+    border-radius: 4px;
+    background: #e9ecef;
+    overflow: hidden;
+  }
+
+  .metric-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width .6s ease;
+  }
+
+  .metric-count {
+    min-width: 30px;
+    text-align: right;
+    font-size: .82rem;
+    font-weight: 600;
+  }
+
+  /* Unread badge */
+  .unread-badge {
+    background: #fa5252;
+    color: #fff;
+    font-size: .68rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 20px;
+  }
+</style>
+{% endblock %}
+
+{% block content_header %}
+<div class="row align-items-center">
+  <div class="col">
+    <div class="page-pretitle">CSESE Admin</div>
+    <h2 class="page-title">
+      <i class="fa-solid fa-chart-line me-2" style="color:#206bc4"></i>
+      Insights Dashboard
+    </h2>
+  </div>
+  <div class="col-auto">
+    <span class="badge bg-success-lt fs-7">
+      <i class="fa-solid fa-circle fa-xs me-1" style="color:#2fb344"></i> Live
+    </span>
+    <span class="text-muted ms-2" style="font-size:.82rem">
+      {{ now }}
+    </span>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{% set s = stats %}
+
+{# ───────────────────────────── ROW 1: Top KPI Cards ───────────────────────── #}
+<div class="col-12">
+  <p class="section-title"><i class="fa-solid fa-layer-group me-1"></i> Content Overview</p>
+</div>
+
+{# News #}
+<div class="col-sm-6 col-lg-3">
+  <div class="card stat-card h-100">
+    <div class="card-body">
+      <div class="d-flex align-items-center mb-3 gap-3">
+        <div class="stat-icon bg-grad-blue text-white">
+          <i class="fa-solid fa-newspaper"></i>
+        </div>
+        <div>
+          <div class="stat-value text-blue">{{ s.total_news }}</div>
+          <div class="stat-label">News Articles</div>
+        </div>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label text-success"><i class="fa-solid fa-circle-check fa-xs me-1"></i>Published</span>
+        <div class="metric-bar">
+          <div class="metric-fill bg-success"
+            style="width:{{ (s.published_news / [s.total_news,1]|max * 100)|round }}%"></div>
+        </div>
+        <span class="metric-count">{{ s.published_news }}</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label text-muted"><i class="fa-solid fa-pen fa-xs me-1"></i>Draft</span>
+        <div class="metric-bar">
+          <div class="metric-fill bg-secondary" style="width:{{ (s.draft_news / [s.total_news,1]|max * 100)|round }}%">
+          </div>
+        </div>
+        <span class="metric-count">{{ s.draft_news }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# Events #}
+<div class="col-sm-6 col-lg-3">
+  <div class="card stat-card h-100">
+    <div class="card-body">
+      <div class="d-flex align-items-center mb-3 gap-3">
+        <div class="stat-icon bg-grad-teal text-white">
+          <i class="fa-solid fa-calendar-days"></i>
+        </div>
+        <div>
+          <div class="stat-value text-teal">{{ s.total_events }}</div>
+          <div class="stat-label">Events</div>
+        </div>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label text-azure"><i class="fa-solid fa-clock fa-xs me-1"></i>Upcoming</span>
+        <div class="metric-bar">
+          <div class="metric-fill bg-azure"
+            style="width:{{ (s.upcoming_events / [s.total_events,1]|max * 100)|round }}%"></div>
+        </div>
+        <span class="metric-count">{{ s.upcoming_events }}</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label text-muted"><i class="fa-solid fa-check fa-xs me-1"></i>Past</span>
+        <div class="metric-bar">
+          <div class="metric-fill bg-secondary"
+            style="width:{{ ((s.total_events - s.upcoming_events) / [s.total_events,1]|max * 100)|round }}%"></div>
+        </div>
+        <span class="metric-count">{{ s.total_events - s.upcoming_events }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# Jobs #}
+<div class="col-sm-6 col-lg-3">
+  <div class="card stat-card h-100">
+    <div class="card-body">
+      <div class="d-flex align-items-center mb-3 gap-3">
+        <div class="stat-icon bg-grad-orange text-white">
+          <i class="fa-solid fa-briefcase"></i>
+        </div>
+        <div>
+          <div class="stat-value text-orange">{{ s.total_jobs }}</div>
+          <div class="stat-label">Jobs & Fellowships</div>
+        </div>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label text-success"><i class="fa-solid fa-circle-dot fa-xs me-1"></i>Open</span>
+        <div class="metric-bar">
+          <div class="metric-fill bg-success" style="width:{{ (s.active_jobs / [s.total_jobs,1]|max * 100)|round }}%">
+          </div>
+        </div>
+        <span class="metric-count">{{ s.active_jobs }}</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label text-muted"><i class="fa-solid fa-circle-xmark fa-xs me-1"></i>Closed</span>
+        <div class="metric-bar">
+          <div class="metric-fill bg-secondary"
+            style="width:{{ ((s.total_jobs - s.active_jobs) / [s.total_jobs,1]|max * 100)|round }}%"></div>
+        </div>
+        <span class="metric-count">{{ s.total_jobs - s.active_jobs }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# Members #}
+<div class="col-sm-6 col-lg-3">
+  <div class="card stat-card h-100">
+    <div class="card-body">
+      <div class="d-flex align-items-center mb-3 gap-3">
+        <div class="stat-icon bg-grad-purple text-white">
+          <i class="fa-solid fa-users"></i>
+        </div>
+        <div>
+          <div class="stat-value text-purple">{{ s.total_members }}</div>
+          <div class="stat-label">Members (Who is Who)</div>
+        </div>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label text-success"><i class="fa-solid fa-eye fa-xs me-1"></i>Published</span>
+        <div class="metric-bar">
+          <div class="metric-fill bg-purple"
+            style="width:{{ (s.published_members / [s.total_members,1]|max * 100)|round }}%"></div>
+        </div>
+        <span class="metric-count">{{ s.published_members }}</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label text-muted"><i class="fa-solid fa-eye-slash fa-xs me-1"></i>Hidden</span>
+        <div class="metric-bar">
+          <div class="metric-fill bg-secondary"
+            style="width:{{ ((s.total_members - s.published_members) / [s.total_members,1]|max * 100)|round }}%"></div>
+        </div>
+        <span class="metric-count">{{ s.total_members - s.published_members }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ───────────────────────────── ROW 2: Chart + Submissions ──────────────────── #}
+<div class="col-12 mt-2">
+  <p class="section-title"><i class="fa-solid fa-chart-area me-1"></i> Activity & Submissions</p>
+</div>
+
+{# Line Chart #}
+<div class="col-lg-8">
+  <div class="card chart-card">
+    <div class="card-header bg-white border-bottom-0 pt-3 pb-0">
+      <h3 class="card-title">Content Published — Last 6 Months</h3>
+      <div class="card-options">
+        <span class="badge bg-blue-lt me-1"><span class="badge-dot" style="background:#206bc4"></span>News</span>
+        <span class="badge bg-teal-lt"><span class="badge-dot" style="background:#0ca678"></span>Events</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <canvas id="contentChart" height="120"></canvas>
+    </div>
+  </div>
+</div>
+
+{# Submissions summary #}
+<div class="col-lg-4">
+  <div class="card chart-card h-100">
+    <div class="card-header bg-white border-bottom-0 pt-3 pb-0">
+      <h3 class="card-title">Submissions Inbox</h3>
+    </div>
+    <div class="card-body">
+      {# Contact #}
+      <a href="/panel/contact-submission/list" class="text-decoration-none">
+        <div class="d-flex align-items-center gap-3 mb-4 p-3 rounded-3" style="background:#f8f9fa; transition:.15s"
+          onmouseover="this.style.background='#e9ecef'" onmouseout="this.style.background='#f8f9fa'">
+          <div class="stat-icon bg-grad-red text-white" style="width:44px;height:44px;font-size:1.1rem">
+            <i class="fa-solid fa-envelope"></i>
+          </div>
+          <div class="flex-grow-1">
+            <div class="fw-bold">Contact Messages</div>
+            <div class="text-muted" style="font-size:.82rem">{{ s.total_contacts }} total</div>
+          </div>
+          {% if s.unread_contacts > 0 %}
+          <span class="unread-badge">{{ s.unread_contacts }} unread</span>
+          {% else %}
+          <span class="badge bg-success-lt text-success">All read</span>
+          {% endif %}
+        </div>
+      </a>
+
+      {# Interest #}
+      <a href="/panel/interest-submission/list" class="text-decoration-none">
+        <div class="d-flex align-items-center gap-3 mb-4 p-3 rounded-3" style="background:#f8f9fa;transition:.15s"
+          onmouseover="this.style.background='#e9ecef'" onmouseout="this.style.background='#f8f9fa'">
+          <div class="stat-icon bg-grad-indigo text-white" style="width:44px;height:44px;font-size:1.1rem">
+            <i class="fa-solid fa-graduation-cap"></i>
+          </div>
+          <div class="flex-grow-1">
+            <div class="fw-bold">Summer School Interests</div>
+            <div class="text-muted" style="font-size:.82rem">{{ s.total_interests }} total</div>
+          </div>
+          {% if s.unread_interests > 0 %}
+          <span class="unread-badge">{{ s.unread_interests }} unread</span>
+          {% else %}
+          <span class="badge bg-success-lt text-success">All read</span>
+          {% endif %}
+        </div>
+      </a>
+
+      {# Quick stats row #}
+      <div class="row g-2 text-center mt-1">
+        <div class="col-4">
+          <div class="bg-blue-lt rounded-3 p-2">
+            <div class="fw-bold text-blue fs-4">{{ s.total_awards }}</div>
+            <div style="font-size:.7rem;color:#6c757d">Awards</div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="bg-teal-lt rounded-3 p-2">
+            <div class="fw-bold text-teal fs-4">{{ s.total_recipients }}</div>
+            <div style="font-size:.7rem;color:#6c757d">Recipients</div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="bg-purple-lt rounded-3 p-2">
+            <div class="fw-bold text-purple fs-4">{{ s.total_methods }}</div>
+            <div style="font-size:.7rem;color:#6c757d">Methods</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ───────────────────────────── ROW 3: Recent Activity + Quick Links ─────────── #}
+<div class="col-12 mt-2">
+  <p class="section-title"><i class="fa-solid fa-bolt me-1"></i> Recent Activity</p>
+</div>
+
+{# Recent Contact Messages #}
+<div class="col-lg-6">
+  <div class="card chart-card">
+    <div class="card-header bg-white pt-3 pb-2 d-flex align-items-center justify-content-between">
+      <h3 class="card-title mb-0">Latest Contact Messages</h3>
+      <a href="/panel/contact-submission/list" class="btn btn-sm btn-outline-secondary">View all</a>
+    </div>
+    <div class="card-body px-3 py-1">
+      {% if s.recent_contacts %}
+      {% for msg in s.recent_contacts %}
+      <div class="activity-item">
+        <div
+          class="activity-avatar {{ 'bg-red-lt text-red' if not msg.is_read else 'bg-secondary-lt text-secondary' }}">
+          <i class="fa-solid fa-envelope"></i>
+        </div>
+        <div class="flex-grow-1 min-width-0">
+          <div class="fw-semibold text-truncate">{{ msg.full_name }}</div>
+          <div class="text-muted text-truncate" style="font-size:.8rem">{{ msg.subject or '(no subject)' }}</div>
+          <div class="activity-time">{{ msg.email }}</div>
+        </div>
+        <div class="flex-shrink-0 text-end">
+          {% if not msg.is_read %}<span class="unread-badge mb-1">New</span><br>{% endif %}
+          <span class="activity-time">{{ msg.created_at.strftime('%b %d') if msg.created_at else '' }}</span>
+        </div>
+      </div>
+      {% endfor %}
+      {% else %}
+      <div class="text-center py-4 text-muted">
+        <i class="fa-solid fa-inbox fa-2x mb-2"></i>
+        <div>No messages yet</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{# Recent News + Quick Links #}
+<div class="col-lg-6">
+  <div class="card chart-card mb-3">
+    <div class="card-header bg-white pt-3 pb-2 d-flex align-items-center justify-content-between">
+      <h3 class="card-title mb-0">Latest News Articles</h3>
+      <a href="/panel/news/list" class="btn btn-sm btn-outline-secondary">View all</a>
+    </div>
+    <div class="card-body px-3 py-1">
+      {% if s.recent_news %}
+      {% for article in s.recent_news %}
+      <div class="activity-item">
+        <div class="activity-avatar bg-blue-lt text-blue">
+          <i class="fa-solid fa-newspaper"></i>
+        </div>
+        <div class="flex-grow-1 min-width-0">
+          <div class="fw-semibold text-truncate">{{ article.title }}</div>
+          <div class="activity-time text-truncate">{{ article.category or 'general' }}</div>
+        </div>
+        <div class="flex-shrink-0 text-end">
+          {% if article.is_published %}
+          <span class="badge bg-success-lt text-success">Published</span>
+          {% else %}
+          <span class="badge bg-secondary-lt">Draft</span>
+          {% endif %}
+          <br>
+          <span class="activity-time">{{ article.created_at.strftime('%b %d') if article.created_at else '' }}</span>
+        </div>
+      </div>
+      {% endfor %}
+      {% else %}
+      <div class="text-center py-4 text-muted">
+        <i class="fa-solid fa-newspaper fa-2x mb-2"></i>
+        <div>No articles yet. <a href="/panel/news/create">Create one</a></div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {# Quick Actions #}
+  <div class="card chart-card">
+    <div class="card-header bg-white pt-3 pb-2">
+      <h3 class="card-title mb-0">Quick Actions</h3>
+    </div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-6"><a href="/panel/news/create" class="btn btn-outline-blue w-100"><i
+              class="fa-solid fa-plus me-1"></i>New Article</a></div>
+        <div class="col-6"><a href="/panel/event/create" class="btn btn-outline-teal w-100"><i
+              class="fa-solid fa-plus me-1"></i>New Event</a></div>
+        <div class="col-6"><a href="/panel/job/create" class="btn btn-outline-orange w-100"><i
+              class="fa-solid fa-plus me-1"></i>New Job</a></div>
+        <div class="col-6"><a href="/panel/donation-method/create" class="btn btn-outline-pink w-100"><i
+              class="fa-solid fa-plus me-1"></i>New Method</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block tail %}
+<script>
+  const ctx = document.getElementById('contentChart');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: {{ chart_labels | tojson }},
+    datasets: [
+    {
+      label: 'News Articles',
+      data: {{ chart_news | tojson }},
+    borderColor: '#206bc4',
+    backgroundColor: 'rgba(32,107,196,.12)',
+    borderWidth: 2.5,
+    pointBackgroundColor: '#206bc4',
+    pointRadius: 5,
+    pointHoverRadius: 7,
+    tension: 0.4,
+    fill: true,
+      },
+    {
+      label: 'Events',
+      data: {{ chart_events | tojson }},
+    borderColor: '#0ca678',
+    backgroundColor: 'rgba(12,166,120,.10)',
+    borderWidth: 2.5,
+    pointBackgroundColor: '#0ca678',
+    pointRadius: 5,
+    pointHoverRadius: 7,
+    tension: 0.4,
+    fill: true,
+      },
+  ]
+  },
+    options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#1a1a2e',
+        titleColor: '#fff',
+        bodyColor: '#adb5bd',
+        padding: 12,
+        cornerRadius: 10,
+      }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { size: 12 } } },
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1, font: { size: 12 }, precision: 0 },
+        grid: { color: 'rgba(0,0,0,.05)' }
+      }
+    }
+  }
+});
+</script>
+{% endblock %}
