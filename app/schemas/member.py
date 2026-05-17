@@ -10,7 +10,6 @@ class MemberBase(BaseModel):
     linkedin_url: str | None = None
     profile_url: str | None = None
     avatar_url: str | None = None
-    initials: str | None = None
     is_published: bool = True
 
 
@@ -27,7 +26,6 @@ class MemberUpdate(BaseModel):
     linkedin_url: str | None = None
     profile_url: str | None = None
     avatar_url: str | None = None
-    initials: str | None = None
     is_published: bool | None = None
 
 

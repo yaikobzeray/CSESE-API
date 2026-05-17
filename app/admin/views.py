@@ -166,8 +166,8 @@ class MemberView(ModelView, model=Member):
     column_sortable_list = [Member.full_name, Member.institution, Member.position, Member.is_published]
     column_default_sort = [(Member.full_name, False)]
     column_filters = [BooleanFilter(Member.is_published)]
-    column_details_list = [Member.id, Member.full_name, Member.title, Member.position, Member.institution, Member.bio, Member.linkedin_url, Member.profile_url, Member.avatar_url, Member.initials, Member.is_published, Member.created_at, Member.updated_at]
-    form_columns = [Member.full_name, Member.title, Member.position, Member.institution, Member.bio, Member.linkedin_url, Member.profile_url, Member.initials, Member.is_published]
+    column_details_list = [Member.id, Member.full_name, Member.title, Member.position, Member.institution, Member.bio, Member.linkedin_url, Member.profile_url, Member.avatar_url, Member.is_published, Member.created_at, Member.updated_at]
+    form_columns = [Member.full_name, Member.title, Member.position, Member.institution, Member.bio, Member.linkedin_url, Member.profile_url, Member.is_published]
 
     can_view_details = True
     page_size = 25

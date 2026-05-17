@@ -10,6 +10,7 @@ from app.models.contact import ContactSubmission, InterestSubmission
 from app.models.event import Event
 from app.models.job import Job
 from app.models.member import Member
+from app.models.site_member import MembershipStatus, SiteMember
 from app.models.donation import DonationMethod
 from app.models.news import News
 
@@ -45,6 +46,10 @@ def get_dashboard_stats() -> dict:
 
         total_interests  = db.scalar(select(func.count()).select_from(InterestSubmission))
         unread_interests = db.scalar(select(func.count()).select_from(InterestSubmission).where(InterestSubmission.is_read == False))
+
+        total_applications  = db.scalar(select(func.count()).select_from(SiteMember))
+        pending_applications = db.scalar(select(func.count()).select_from(SiteMember).where(SiteMember.status == MembershipStatus.pending))
+        approved_applications = db.scalar(select(func.count()).select_from(SiteMember).where(SiteMember.status == MembershipStatus.approved))
 
         total_admins     = db.scalar(select(func.count()).select_from(Admin))
 
@@ -84,6 +89,9 @@ def get_dashboard_stats() -> dict:
             "unread_contacts": unread_contacts or 0,
             "total_interests": total_interests or 0,
             "unread_interests": unread_interests or 0,
+            "total_applications": total_applications or 0,
+            "pending_applications": pending_applications or 0,
+            "approved_applications": approved_applications or 0,
             "total_admins": total_admins or 0,
             "recent_contacts": recent_contacts,
             "recent_news": recent_news,

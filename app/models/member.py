@@ -18,6 +18,4 @@ class Member(Base):
     linkedin_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     profile_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     avatar_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    # Initials used as avatar fallback (e.g. "AB" for "Abebe Bekele")
-    initials: Mapped[str | None] = mapped_column(String(10), nullable=True)
     is_published: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
