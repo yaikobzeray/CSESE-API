@@ -417,6 +417,25 @@
         </div>
       </a>
 
+      {# Applications #}
+      <a href="/panel/sitemember/list" class="text-decoration-none">
+        <div class="d-flex align-items-center gap-3 mb-4 p-3 rounded-3" style="background:#f8f9fa;transition:.15s"
+          onmouseover="this.style.background='#e9ecef'" onmouseout="this.style.background='#f8f9fa'">
+          <div class="stat-icon bg-grad-green text-white" style="width:44px;height:44px;font-size:1.1rem">
+            <i class="fa-solid fa-id-card"></i>
+          </div>
+          <div class="flex-grow-1">
+            <div class="fw-bold">Member Applications</div>
+            <div class="text-muted" style="font-size:.82rem">{{ s.total_applications }} total</div>
+          </div>
+          {% if s.pending_applications > 0 %}
+          <span class="unread-badge">{{ s.pending_applications }} pending</span>
+          {% else %}
+          <span class="badge bg-success-lt text-success">All reviewed</span>
+          {% endif %}
+        </div>
+      </a>
+
       {# Quick stats row #}
       <div class="row g-2 text-center mt-1">
         <div class="col-4">
