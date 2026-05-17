@@ -75,9 +75,14 @@ app = FastAPI(
 )
 
 # --- Middleware ---
+# Safely clean up CORS origins from environment variables (strip trailing slashes)
+safe_origins = [origin.rstrip("/") for origin in settings.CORS_ORIGINS]
+if "https://csese.vercel.app" not in safe_origins:
+    safe_origins.append("https://csese.vercel.app")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=safe_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
