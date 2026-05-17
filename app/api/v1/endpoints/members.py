@@ -21,7 +21,7 @@ def get_member(member_id: int, db: DbSession):
 
 
 @router.post("/", response_model=MemberOut, status_code=status.HTTP_201_CREATED)
-def create_member(data: MemberCreate, db: DbSession, _: CurrentAdmin):
+def create_member(data: MemberCreate, db: DbSession):
     return crud.create_member(db, data)
 
 
