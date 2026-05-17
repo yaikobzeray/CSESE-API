@@ -4,7 +4,7 @@ from app.api.deps import CurrentAdmin, DbSession
 from app.crud import member as crud
 from app.schemas.member import MemberCreate, MemberOut, MemberUpdate
 
-router = APIRouter(tags=["Who is Who"])
+router = APIRouter(tags=["who-is-who"])
 
 
 @router.get("/", response_model=list[MemberOut])

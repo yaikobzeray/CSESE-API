@@ -9,6 +9,7 @@ from app.api.v1.endpoints import (
     jobs,
     members,
     news,
+    site_members,
 )
 
 api_router = APIRouter()
@@ -17,7 +18,8 @@ api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
 api_router.include_router(news.router, prefix="/news", tags=["news"])
 api_router.include_router(events.router, prefix="/events", tags=["events"])
 api_router.include_router(jobs.router, prefix="/jobs", tags=["jobs"])
-api_router.include_router(members.router, prefix="/members", tags=["members"])
+api_router.include_router(members.router, prefix="/members", tags=["who-is-who"])
+api_router.include_router(site_members.router, prefix="/site-members", tags=["members"])
 api_router.include_router(awards.router, prefix="/awards", tags=["awards"])
 api_router.include_router(donation.router, prefix="/donation", tags=["donation"])
 api_router.include_router(contact.router, prefix="/contact", tags=["contact"])

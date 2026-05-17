@@ -28,6 +28,7 @@ from app.models.contact import ContactSubmission, InterestSubmission
 from app.models.event import Event
 from app.models.job import Job
 from app.models.member import Member
+from app.models.site_member import SiteMember, MembershipStatus
 from app.models.donation import DonationMethod
 from app.models.news import News
 
@@ -180,6 +181,54 @@ class MemberView(ModelView, model=Member):
         url = await _save_upload(request, "avatar", subfolder="avatars")
         if url:
             model.avatar_url = url
+
+
+# ---------------------------------------------------------------------------
+# Content – Site Members (Public Registrations)
+# ---------------------------------------------------------------------------
+
+class SiteMemberView(ModelView, model=SiteMember):
+    name = "Member Application"
+    name_plural = "Member Applications"
+    icon = "fa-solid fa-id-card"
+    category = "Submissions"
+
+    column_list = [
+        SiteMember.id,
+        SiteMember.full_name,
+        SiteMember.email,
+        SiteMember.occupation,
+        SiteMember.institution,
+        SiteMember.status,
+        SiteMember.created_at,
+    ]
+    column_searchable_list = [SiteMember.full_name, SiteMember.email, SiteMember.institution]
+    column_sortable_list = [SiteMember.full_name, SiteMember.status, SiteMember.created_at]
+    column_default_sort = [(SiteMember.created_at, True)]
+    column_filters = [
+        AllUniqueStringValuesFilter(SiteMember.status),
+        BooleanFilter(SiteMember.is_active),
+    ]
+    column_details_list = [
+        SiteMember.id,
+        SiteMember.full_name,
+        SiteMember.email,
+        SiteMember.phone,
+        SiteMember.nationality,
+        SiteMember.occupation,
+        SiteMember.institution,
+        SiteMember.field_of_study,
+        SiteMember.motivation,
+        SiteMember.linkedin_url,
+        SiteMember.status,
+        SiteMember.is_active,
+        SiteMember.created_at,
+    ]
+    form_columns = [SiteMember.status, SiteMember.is_active]
+
+    can_create = False  # Applications are submitted via the public form
+    can_view_details = True
+    page_size = 30
 
 
 # ---------------------------------------------------------------------------

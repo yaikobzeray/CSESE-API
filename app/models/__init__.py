@@ -5,5 +5,6 @@ from app.models.contact import ContactSubmission, InterestSubmission  # noqa: F4
 from app.models.event import Event  # noqa: F401
 from app.models.job import Job  # noqa: F401
 from app.models.member import Member  # noqa: F401
+from app.models.site_member import SiteMember  # noqa: F401
 from app.models.donation import DonationMethod, DonationMethodType  # noqa: F401
 from app.models.news import News  # noqa: F401

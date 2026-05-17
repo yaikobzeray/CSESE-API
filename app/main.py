@@ -26,6 +26,7 @@ from app.admin.views import (
     JobView,
     MemberView,
     NewsView,
+    SiteMemberView,
 )
 from app.api.v1.router import api_router
 from app.core.config import settings
@@ -136,6 +137,7 @@ admin_panel.add_view(AwardRecipientView)
 admin_panel.add_view(DonationMethodView)
 admin_panel.add_view(ContactSubmissionView)
 admin_panel.add_view(InterestSubmissionView)
+admin_panel.add_view(SiteMemberView)
 
 
 # --- /admin redirect -> SQLAdmin panel ---
