@@ -79,8 +79,8 @@ class NewsView(ModelView, model=News):
     column_sortable_list = [News.title, News.category, News.is_published, News.created_at]
     column_default_sort = [(News.created_at, True)]
     column_filters = [AllUniqueStringValuesFilter(News.category), BooleanFilter(News.is_published)]
-    column_details_list = [News.id, News.title, News.content, News.category, News.image_url, News.is_published, News.created_at, News.updated_at]
-    form_columns = [News.title, News.content, News.category, News.is_published]
+    column_details_list = [News.id, News.title, News.summary, News.content, News.category, News.publish_date, News.image_url, News.read_more_url, News.is_published, News.created_at, News.updated_at]
+    form_columns = [News.title, News.summary, News.content, News.category, News.publish_date, News.read_more_url, News.is_published]
 
     can_view_details = True
     page_size = 25
