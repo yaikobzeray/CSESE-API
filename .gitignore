@@ -1,9 +1,37 @@
+# Python
 venv/
+.venv/
+env/
 __pycache__/
 *.pyc
 *.pyo
-.env
+.Python
+
+# FastAPI / SQLAlchemy
 *.db
 *.sqlite3
+alembic.ini.local
+
+# App secrets & config
+.env
+.env.*
+!.env.example
+
+# Uploaded media
 media/
+
+# Static (collected)
+staticfiles/
+
+# Testing
 .pytest_cache/
+htmlcov/
+.coverage
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
